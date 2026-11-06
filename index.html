@@ -237,6 +237,9 @@ details.more[open]>summary::before{content:"– "}
 .consent{background:var(--card);border:1.5px solid var(--edge);border-radius:12px;padding:14px 16px;margin:6px 0 18px}
 .consent ul{margin:8px 0 10px;padding-left:20px;font-size:.95rem}
 footer a{color:var(--muted)}
+.guide{border-color:var(--berry)}
+.g-out{margin-top:14px;line-height:1.6}
+.g-out:empty{display:none}
 .eyebrow{text-transform:uppercase;letter-spacing:.14em;font-size:.78rem;font-weight:700;color:var(--berry-text);margin:0 0 12px}
 .protocol{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px 22px;margin:18px 0 0;padding:16px 18px;border:1px solid var(--line);border-radius:14px;background:var(--card)}
 .protocol dt{font-size:.75rem;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);font-weight:700}
@@ -275,7 +278,7 @@ footer a{color:var(--muted)}
 <section class="view" id="v-home">
   <div class="hero">
     <div>
-      <p class="eyebrow">Community observational trials, run by PhD scientists</p>
+      <p class="eyebrow">Community-based observational clinical trials, run by PhD scientists</p>
       <h1>Your medicine was tested.<br><span class="u">Were you?</span></h1>
       <p class="lead">Most medicines were studied mostly on men. See what is known for women, and pregnant women, and add what you notice.</p>
       <div class="row">
@@ -361,6 +364,17 @@ footer a{color:var(--muted)}
   <h1 style="font-size:clamp(2rem,4.6vw,3rem)">Community</h1>
   <p class="lead">What members notice, counted. Every post adds to the study.</p>
 
+  <div class="card guide" id="guide" style="margin-top:22px">
+    <h3>Ask the guide</h3>
+    <p class="small muted" style="margin:4px 0 12px">Searches the research, the study reports and the conversations here, and points you to threads about your mix. It does not give medical advice.</p>
+    <div class="cmt-form" style="margin-top:0">
+      <label class="sr" for="g-q">Your question</label>
+      <input type="text" id="g-q" maxlength="300" placeholder="For example: Has anyone had anxiety on Mirena while taking Zoloft?">
+      <button class="btn berry" id="g-ask" type="button">Ask</button>
+    </div>
+    <div id="g-out" class="g-out" aria-live="polite"></div>
+  </div>
+
   <div class="card" style="margin-top:22px">
     <div class="viz-head">
       <h3>Side effects members report</h3>
@@ -399,7 +413,7 @@ footer a{color:var(--muted)}
 
 <!-- JOIN -->
 <section class="view" id="v-join" hidden>
-  <p class="eyebrow">Community observational trial · Recruiting</p>
+  <p class="eyebrow">Community-based observational clinical trial · Recruiting</p>
   <h1 style="font-size:clamp(2rem,4.6vw,3rem)">Join the study</h1>
   <dl class="protocol">
     <div><dt>Study</dt><dd>invisiblewomen Community Medication Experience Study</dd></div>
@@ -751,6 +765,35 @@ window.OUTLIER_DATA={"SOURCES":{"awaredx":{"short":"Chandak & Tatonetti, Pattern
     if(me){$('#d-user').textContent=me.username;chips('#u-meds','umeds','checkbox',MEDS_ALL,me.meds);chips('#u-stage','ustage','radio',STAGES,[me.stage]);leaveArm=false;$('#u-leave').textContent='Leave the study'}
   }
   function renderAll(){rebuild();realCount();drawViz();drawPreg();var a=document.activeElement;if(!(a&&a.tagName==='INPUT'&&$('#posts').contains(a)))drawPosts();showPostForm();drawJoin()}
+
+
+  /* Ask the guide: Claude answers from the page's own research, reports and threads */
+  var sampleP=(window.claude&&window.claude.use)?claude.use('sample'):Promise.resolve(null),gBusy=false,gAbort=null;
+  sampleP.then(function(s){if(!s){$('#g-ask').disabled=true;$('#g-out').innerHTML='<p class="small muted">The guide works on the live study page.</p>'}});
+  function guideContext(){
+    var research=D.MEDS.map(function(m){return '- '+m.name+' ('+m.brand+'): '+m.women.text+' Side effects reported most by women: '+m.aw.top.map(function(x){return x[0]}).join(', ')+'.'}).join('\n');
+    var counts={};pool('viz').forEach(function(r){r.meds.forEach(function(m){var c=counts[m]=counts[m]||{n:0,e:{}};c.n++;r.eff.forEach(function(e){if(e!=='None')c.e[e]=(c.e[e]||0)+1})})});
+    var reports=Object.keys(counts).map(function(m){var c=counts[m],top=Object.keys(c.e).sort(function(a,b){return c.e[b]-c.e[a]}).slice(0,3);return '- '+m+': '+c.n+' reports; most reported: '+top.map(function(e){return e+' '+Math.round(c.e[e]/c.n*100)+'%'}).join(', ')}).join('\n');
+    var threads=posts.map(function(p){return '['+p.id+'] "'+p.t+'" meds: '+p.meds.join(', ')+'; side effects: '+p.eff.join(', ')+'; '+p.c.length+' replies. '+(p.b||'').slice(0,160)+' Replies mention: '+p.c.map(function(c){return (c.eff||[]).join('/')}).filter(Boolean).join('; ')}).join('\n');
+    return 'RESEARCH (published studies and FDA labels):\n'+research+'\n\nCOMMUNITY REPORTS (members plus labeled example numbers):\n'+reports+'\n\nFORUM THREADS:\n'+threads;
+  }
+  function linkify(txt){
+    return esc(txt).replace(/\[\[([A-Za-z0-9_~.\-]+)\]\]/g,function(m,id){var p=posts.filter(function(x){return x.id===id})[0];return p?'<button type="button" class="linkbtn" data-goto="'+esc(id)+'">'+esc(p.t)+'</button>':''}).replace(/\n/g,'<br>');
+  }
+  $('#g-out').addEventListener('click',function(e){var b=e.target.closest('[data-goto]');if(!b)return;openId=b.dataset.goto;drawPosts();var el=document.querySelector('[data-open="'+openId+'"]');if(el)el.scrollIntoView({block:'center'})});
+  function askGuide(){
+    var q=$('#g-q').value.trim();if(!q||gBusy)return;
+    sampleP.then(function(sample){
+      if(!sample)return;gBusy=true;$('#g-ask').disabled=true;$('#g-out').innerHTML='<p class="small muted">Looking through the research and conversations…</p>';
+      if(gAbort)gAbort.abort();gAbort=new AbortController();
+      var prompt='You are the invisiblewomen study guide on a women\'s medicine research site. Answer the member\'s question using ONLY the context below. Rules: plain, warm, short (under 150 words). Say what the published research shows and what community members report, and keep the two clearly separate; community reports are self-reported, not proof. Point to the most relevant forum threads by writing their id in double brackets, like [[ex7]], one to three threads. Never diagnose, never tell anyone to start, stop or change a medicine; suggest talking with their prescriber. If someone mentions thoughts of self-harm, tell them to call or text 988 in the US. If the context has nothing relevant, say so and suggest posting the question.\n\n'+guideContext()+'\n\nMEMBER QUESTION: '+q;
+      sample(prompt,{signal:gAbort.signal,modelTier:'quick',onText:function(u){$('#g-out').innerHTML=linkify(u.text)}}).then(function(r){$('#g-out').innerHTML=linkify(r.text)+'<p class="small muted" style="margin-top:10px">AI-generated from this site’s research and member reports. Not medical advice.</p>'},function(err){
+        $('#g-out').innerHTML='<p class="small muted">'+(err&&err.code==='rate_limited'?'The guide is busy. Try again in a minute.':err&&err.code==='not_granted'?'The guide needs your permission to use Claude on this page.':'The guide could not answer right now.')+'</p>';
+      }).then(function(){gBusy=false;$('#g-ask').disabled=false});
+    });
+  }
+  $('#g-ask').addEventListener('click',askGuide);
+  $('#g-q').addEventListener('keydown',function(e){if(e.key==='Enter')askGuide()});
 
   /* connect to the shared study store when the page runs on claude.ai; otherwise stay local */
   renderAll();route();
