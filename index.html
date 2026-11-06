@@ -530,7 +530,7 @@ footer a{color:var(--muted)}
   <form id="join-form" class="card" novalidate onsubmit="return false" style="margin-top:22px">
     <div class="fields">
       <div><label class="f" for="j-user">Username <span class="muted" style="font-weight:400">(the only thing shown publicly)</span></label><input type="text" id="j-user" maxlength="24" autocomplete="off"></div>
-      <div><label class="f" for="j-birth">Birthdate</label><input type="date" id="j-birth"></div>
+      <div><label class="f" for="j-birth">Birth year</label><select id="j-birth"><option value="">Choose a year</option></select></div>
     </div>
     <fieldset><legend>Pregnancy</legend><div class="chips" id="j-stage"></div></fieldset>
     <fieldset><legend>Birth control <span class="hint">(select all you use now)</span></legend><div class="chips" id="j-bc"></div></fieldset>
@@ -547,7 +547,7 @@ footer a{color:var(--muted)}
       <b>The community study</b>
       <ul>
         <li>Your posts and comments show your username with your medicines, birth control, pregnancy status and side effects.</li>
-        <li>In the charts they're counted without your username. Your birthdate, sex and race stay private.</li>
+        <li>In the charts they're counted without your username. Your birth year, sex and race stay private.</li>
         <li>AI helps find patterns across members' reports. It never gives medical advice.</li>
         <li>You can leave at any time.</li>
       </ul>
@@ -864,14 +864,15 @@ window.OUTLIER_DATA={"SOURCES":{"awaredx":{"short":"Chandak & Tatonetti, Pattern
   chips('#j-sex','sex','checkbox',['Female','Male','Intersex']);
   chips('#j-bc','bc','checkbox',BC);
   chips('#j-race','race','checkbox',['American Indian or Alaska Native','Asian','Black or African American','Hispanic or Latina','Middle Eastern or North African','Native Hawaiian or Pacific Islander','White','Prefer not to say']);
-  function band(birth){var b=new Date(birth),n=new Date(),a=n.getFullYear()-b.getFullYear(),m=n.getMonth()-b.getMonth();if(m<0||(m===0&&n.getDate()<b.getDate()))a--;return {age:a,band:(Math.floor(a/5)*5)+'–'+(Math.floor(a/5)*5+4)}}
+  (function(){var y=new Date().getFullYear(),h='<option value="">Choose a year</option>';for(var i=y-18;i>=y-90;i--)h+='<option>'+i+'</option>';$('#j-birth').innerHTML=h})();
+  function band(year){var a=new Date().getFullYear()-(+year);return {age:a,band:(Math.floor(a/5)*5)+'–'+(Math.floor(a/5)*5+4)}}
   $('#j-submit').addEventListener('click',function(){
     var err=$('#j-err'),us=$('#j-user').value.trim(),bd=$('#j-birth').value,bc=vals('#j-bc'),meds=vals('#j-meds').concat(bc.filter(function(b){return b!=='None'&&b!=='Condoms'})),st=vals('#j-stage')[0],eff=vals('#j-eff'),exp=$('#j-exp').value.trim();
     if(!S.uid){err.textContent='Sign in to claude.ai to join the study.';return}
     var other=S.other;
     if(S.write===false){err.textContent='This page is read-only for you. Ask the study owner to add you as a member.';return}
     if(us.length<3){err.textContent='Pick a username with at least 3 characters.';return}
-    if(!bd){err.textContent='Add your birthdate.';return}
+    if(!bd){err.textContent='Choose your birth year.';return}
     var b=band(bd);if(b.age<18){err.textContent='Study members must be 18 or older.';return}
     if(!st){err.textContent='Choose your pregnancy status.';return}
     if(!bc.length){err.textContent='Pick your birth control, or None.';return}
