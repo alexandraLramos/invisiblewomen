@@ -395,33 +395,37 @@ footer a{color:var(--muted)}
 <!-- JOIN -->
 <section class="view" id="v-join" hidden>
   <h1 style="font-size:clamp(2rem,4.6vw,3rem)">Join the study</h1>
-  <p class="lead">Your profile enrolls you in the invisiblewomen community study. You need it to post or comment. Everything else on the site stays open.</p>
+  <p class="lead">One page, about two minutes. Your answers enroll you in the invisiblewomen community study and become your first report.</p>
 
   <form id="join-form" class="card" novalidate onsubmit="return false" style="margin-top:22px">
     <div class="fields">
       <div><label class="f" for="j-user">Username <span class="muted" style="font-weight:400">(the only thing shown publicly)</span></label><input type="text" id="j-user" maxlength="24" autocomplete="off"></div>
       <div><label class="f" for="j-birth">Birthdate</label><input type="date" id="j-birth"></div>
     </div>
-    <fieldset><legend>Every medicine you take now</legend><div class="chips" id="j-meds"></div></fieldset>
     <fieldset><legend>Pregnancy</legend><div class="chips" id="j-stage"></div></fieldset>
-    <details style="margin:0 0 18px"><summary class="small" style="cursor:pointer;font-weight:700">Optional: more about you</summary>
+    <fieldset><legend>Birth control <span class="hint">(select all you use now)</span></legend><div class="chips" id="j-bc"></div></fieldset>
+    <fieldset><legend>Every other medicine you take now</legend><div class="chips" id="j-meds"></div></fieldset>
+    <fieldset><legend>Side effects you've noticed <span class="hint">(pick None if none)</span></legend><div class="chips" id="j-eff"></div></fieldset>
+    <label class="f" for="j-exp">Your experience with this mix <span class="muted" style="font-weight:400">(optional, shared on your first post)</span></label>
+    <textarea id="j-exp" maxlength="1200" placeholder="For example: started tirzepatide in March while on Nexplanon. Nausea the first month, spotting got worse..." style="margin-bottom:18px"></textarea>
+    <details style="margin:0 0 18px"><summary class="small" style="cursor:pointer;font-weight:700">Optional and private: more about you</summary>
       <fieldset style="margin-top:14px"><legend>Sex</legend><div class="chips" id="j-sex"></div></fieldset>
-      <fieldset><legend>Birth control</legend><div class="chips" id="j-bc"></div></fieldset>
       <fieldset><legend>Race <span class="hint">(select all that apply)</span></legend><div class="chips" id="j-race"></div></fieldset>
     </details>
     <div class="consent">
       <b>The community study</b>
       <ul>
-        <li>Your posts and comments show your username with your medicines, pregnancy status and side effects.</li>
-        <li>In the charts they're counted without your username. Your birthdate and the optional details stay private.</li>
+        <li>Your posts and comments show your username with your medicines, birth control, pregnancy status and side effects.</li>
+        <li>In the charts they're counted without your username. Your birthdate, sex and race stay private.</li>
         <li>AI helps find patterns across members' reports. It never gives medical advice.</li>
         <li>You can leave at any time.</li>
       </ul>
       <label class="chip"><input type="checkbox" id="j-consent"><span>I agree to join the study</span></label>
     </div>
+    <p class="note teal" id="j-other-note" hidden>Filling in a survey for someone else on this device. They should choose their own answers and tick the agreement themselves. <button type="button" class="linkbtn" id="j-other-cancel">Cancel</button></p>
     <div class="err" id="j-err" role="alert"></div>
     <div class="row">
-      <button class="btn berry" id="j-submit" type="button">Join</button>
+      <button class="btn berry" id="j-submit" type="button">Submit and join</button>
     </div>
     <p class="small muted" style="margin-top:14px">You join with your claude.ai sign-in, so there's no new password.</p>
   </form>
@@ -429,9 +433,10 @@ footer a{color:var(--muted)}
   <div id="join-done" class="card" hidden style="margin-top:22px">
     <h2 style="margin-bottom:10px">Welcome, <span id="d-user"></span></h2>
     <p>You're in the study. Keep this up to date so your posts are counted correctly.</p>
-    <fieldset><legend>Every medicine you take now</legend><div class="chips" id="u-meds"></div></fieldset>
+    <fieldset><legend>Every medicine and birth control you use now</legend><div class="chips" id="u-meds"></div></fieldset>
     <fieldset><legend>Pregnancy</legend><div class="chips" id="u-stage"></div></fieldset>
     <div class="row"><button class="btn" id="u-save" type="button">Save</button><a class="btn berry" href="#community">Go to the community</a><button class="btn alt" id="u-leave" type="button">Leave the study</button></div>
+    <div class="cta" id="u-other-box" style="margin-top:18px" hidden><p><b>Someone with you?</b> They can fill in their own survey on this device. It saves as their own member and first post.</p><button class="btn berry" id="u-other" type="button">Add another person's survey</button></div>
   </div>
 </section>
 
@@ -524,9 +529,12 @@ window.OUTLIER_DATA={"SOURCES":{"awaredx":{"short":"Chandak & Tatonetti, Pattern
   /* study vocabulary */
   var TOPICS={'Morning sickness':['Zofran','Diclegis'],'Pain relief':['Tylenol','Ibuprofen'],'Arthritis':['Plaquenil','Humira','Prednisone'],'Mood and sleep':['Zoloft','Ambien']};
   var PREG_MEDS=['Zofran','Diclegis','Tylenol','Ibuprofen','Plaquenil','Humira','Prednisone'];
-  var MEDS_ALL=SHORT.concat(PREG_MEDS,['Birth control','Prenatal vitamins','Other']);
+  var BC=['Nexplanon','Kyleena IUD','Mirena IUD','Copper IUD','Combined pill','Progestin-only pill','Depo shot','Patch','Ring','Condoms','None'];
+  var EXTRA=['Spironolactone','Tirzepatide'];
+  var OTHER_MEDS=SHORT.concat(EXTRA,PREG_MEDS,['Prenatal vitamins','Other']);
+  var MEDS_ALL=OTHER_MEDS.concat(BC.filter(function(b){return b!=='None'&&b!=='Condoms'}));
   var STAGES=['Not pregnant','Pregnant, 1st trimester','Pregnant, 2nd trimester','Pregnant, 3rd trimester','Breastfeeding','Trying to conceive'];
-  var EFFECTS=['Nausea','Dizziness','Sleepiness','Headache','Constipation','Heartburn','Anxiety','Low mood','Appetite change','Rash or hives','Cycle change','None'];
+  var EFFECTS=['Nausea','Dizziness','Sleepiness','Headache','Constipation','Heartburn','Anxiety','Low mood','Appetite change','Weight change','Acne','Spotting','Cycle change','Low libido','Hair changes','Rash or hives','None'];
   var isPreg=function(s){return (s||'').indexOf('Pregnant')===0};
   var clone=function(o){return JSON.parse(JSON.stringify(o))};
 
@@ -547,7 +555,7 @@ window.OUTLIER_DATA={"SOURCES":{"awaredx":{"short":"Chandak & Tatonetti, Pattern
 
   /* community chart */
   var vizMed='Zoloft';
-  chips('#viz-meds','vizmed','radio',SHORT.concat(PREG_MEDS),[vizMed],function(){vizMed=vals('#viz-meds')[0];drawViz()});
+  chips('#viz-meds','vizmed','radio',SHORT.concat(EXTRA,['Nexplanon','Kyleena IUD'],PREG_MEDS),[vizMed],function(){vizMed=vals('#viz-meds')[0];drawViz()});
   $('#viz-only').addEventListener('change',function(){onlyReal.viz=this.checked;drawViz()});
   function effCounts(R){var all={};R.forEach(function(r){r.eff.forEach(function(e){if(e!=='None')all[e]=(all[e]||0)+1})});return all}
   function drawViz(){
@@ -595,7 +603,7 @@ window.OUTLIER_DATA={"SOURCES":{"awaredx":{"short":"Chandak & Tatonetti, Pattern
   function ago(t){if(!t)return '';var m=Math.round((Date.now()-t)/60000);return m<1?'just now':m<60?m+' min ago':m<1440?Math.round(m/60)+' h ago':Math.round(m/1440)+' days ago'}
   function rebuild(){
     var byId={};posts=EXPOSTS.map(function(p){var q=clone(p);q.ex=true;byId[q.id]=q;return q});real=[];
-    Object.keys(members).forEach(function(uid){var m=members[uid]||{};(m.posts||[]).forEach(function(p){var q={id:uid+'~'+p.id,t:p.t,a:m.username||'member',meds:p.meds||[],stage:p.stage,eff:p.eff||[],v:0,at:p.at||0,c:[]};posts.push(q);byId[q.id]=q;real.push({meds:q.meds,stage:q.stage,eff:q.eff})})});
+    Object.keys(members).forEach(function(uid){var m=members[uid]||{};(m.posts||[]).forEach(function(p){var q={id:uid+'~'+p.id,t:p.t,b:p.b||'',a:m.username||'member',meds:p.meds||[],stage:p.stage,eff:p.eff||[],v:0,at:p.at||0,c:[]};posts.push(q);byId[q.id]=q;real.push({meds:q.meds,stage:q.stage,eff:q.eff})})});
     Object.keys(members).forEach(function(uid){var m=members[uid]||{};
       (m.comments||[]).forEach(function(c){var p=byId[c.post];if(p)p.c.push({who:m.username||'member',text:c.text,meds:c.meds,stage:c.stage,eff:c.eff,at:c.at});real.push({meds:c.meds||[],stage:c.stage,eff:c.eff||[]})});
       (m.votes||[]).forEach(function(k){if(byId[k])byId[k].v++})});
@@ -610,6 +618,7 @@ window.OUTLIER_DATA={"SOURCES":{"awaredx":{"short":"Chandak & Tatonetti, Pattern
       var open=openId===p.id,voted=mv.indexOf(p.id)>-1;
       h+='<article class="post"><div class="vote"><button type="button" data-vote="'+esc(p.id)+'" aria-pressed="'+voted+'" aria-label="Upvote">▲</button><b>'+p.v+'</b></div><div class="pbody"><h3><button type="button" data-open="'+esc(p.id)+'" aria-expanded="'+open+'">'+esc(p.t)+'</button></h3><div class="meta">'+esc(p.a)+' · '+(p.ex?'<span class="badge demo">Example</span>':esc(ago(p.at)))+' · '+p.c.length+' comment'+(p.c.length===1?'':'s')+'</div><div>'+tags(p.meds,p.stage,p.eff)+'</div>';
       if(open){
+        if(p.b)h+='<p style="margin:10px 0 0">'+esc(p.b)+'</p>';
         h+='<div class="thread">';
         p.c.forEach(function(c){h+='<div class="cmt'+(c.mod?' mod':'')+'"><div class="who">'+esc(c.who)+(c.mod?' · moderator':'')+(c.at?' · '+esc(ago(c.at)):'')+'</div>'+esc(c.text)+(c.meds?'<div style="margin-top:4px">'+tags(c.meds,c.stage,c.eff)+'</div>':'')+'</div>'});
         if(me){
@@ -663,25 +672,35 @@ window.OUTLIER_DATA={"SOURCES":{"awaredx":{"short":"Chandak & Tatonetti, Pattern
   });
 
   /* join = enroll in the study */
-  chips('#j-meds','jmeds','checkbox',MEDS_ALL);
+  chips('#j-meds','jmeds','checkbox',OTHER_MEDS);
+  chips('#j-eff','jeff','checkbox',EFFECTS);
   chips('#j-stage','jstage','radio',STAGES);
   chips('#j-sex','sex','checkbox',['Female','Male','Intersex']);
-  chips('#j-bc','bc','checkbox',['None','Pill','Implant','Hormonal IUD','Copper IUD','Injection','Patch or ring','Other']);
+  chips('#j-bc','bc','checkbox',BC);
   chips('#j-race','race','checkbox',['American Indian or Alaska Native','Asian','Black or African American','Hispanic or Latina','Middle Eastern or North African','Native Hawaiian or Pacific Islander','White','Prefer not to say']);
   function band(birth){var b=new Date(birth),n=new Date(),a=n.getFullYear()-b.getFullYear(),m=n.getMonth()-b.getMonth();if(m<0||(m===0&&n.getDate()<b.getDate()))a--;return {age:a,band:(Math.floor(a/5)*5)+'–'+(Math.floor(a/5)*5+4)}}
   $('#j-submit').addEventListener('click',function(){
-    var err=$('#j-err'),us=$('#j-user').value.trim(),bd=$('#j-birth').value,meds=vals('#j-meds'),st=vals('#j-stage')[0];
+    var err=$('#j-err'),us=$('#j-user').value.trim(),bd=$('#j-birth').value,bc=vals('#j-bc'),meds=vals('#j-meds').concat(bc.filter(function(b){return b!=='None'&&b!=='Condoms'})),st=vals('#j-stage')[0],eff=vals('#j-eff'),exp=$('#j-exp').value.trim();
     if(!S.uid){err.textContent='Sign in to claude.ai to join the study.';return}
+    var other=S.other;
     if(S.write===false){err.textContent='This page is read-only for you. Ask the study owner to add you as a member.';return}
     if(us.length<3){err.textContent='Pick a username with at least 3 characters.';return}
     if(!bd){err.textContent='Add your birthdate.';return}
     var b=band(bd);if(b.age<18){err.textContent='Study members must be 18 or older.';return}
-    if(!meds.length){err.textContent='Pick every medicine you take now.';return}
     if(!st){err.textContent='Choose your pregnancy status.';return}
+    if(!bc.length){err.textContent='Pick your birth control, or None.';return}
+    if(!meds.length){err.textContent='Pick at least one medicine or birth control.';return}
+    if(!eff.length){err.textContent='Pick the side effects you have noticed, or None.';return}
     if(!$('#j-consent').checked){err.textContent='Please agree to join the study to continue.';return}
     err.textContent='';
-    var priv={ageBand:b.band,sex:vals('#j-sex'),birthControl:vals('#j-bc'),race:vals('#j-race'),consentedAt:Date.now()};
-    var done=function(){saveMine(function(m){m.username=us;m.meds=meds;m.stage=st;m.joined=m.joined||Date.now();m.posts=m.posts||[];m.comments=m.comments||[];m.votes=m.votes||[]}).then(function(){toast('Welcome to the study.')})};
+    var priv={ageBand:b.band,sex:vals('#j-sex'),race:vals('#j-race'),consentedAt:Date.now()};
+    if(other){
+      var pid='p-'+Date.now().toString(36),doc={username:us,meds:meds,bc:bc,stage:st,joined:Date.now(),addedBy:S.uid,posts:[{id:Date.now().toString(36),t:'My mix: '+meds.join(' + '),b:exp,meds:meds,stage:st,eff:eff,at:Date.now()}],comments:[],votes:[]};
+      var fin=function(){members[pid]=doc;S.other=false;$('#join-form').reset();renderAll();toast(us+' is added to the study.')};
+      if(S.mode==='local'){fin();return}
+      S.db.doc('members/'+pid).set(doc).then(fin,function(){err.textContent='Only the page owner can add someone else\u2019s survey.'});return;
+    }
+    var done=function(){saveMine(function(m){m.username=us;m.meds=meds;m.bc=bc;m.stage=st;m.joined=m.joined||Date.now();m.posts=m.posts||[];m.posts.push({id:Date.now().toString(36),t:'My mix: '+meds.join(' + '),b:exp,meds:meds,stage:st,eff:eff,at:Date.now()});m.comments=m.comments||[];m.votes=m.votes||[]}).then(function(){toast('Welcome to the study.')})};
     if(S.mode==='local'){done();return}
     S.db.doc('data/users/'+S.uid+'/profile').set(priv).then(done,function(){err.textContent='That did not save. You may not have permission to join on this page.'});
   });
@@ -693,8 +712,10 @@ window.OUTLIER_DATA={"SOURCES":{"awaredx":{"short":"Chandak & Tatonetti, Pattern
     if(S.mode!=='local'){S.db.doc('members/'+uid).delete();S.db.doc('data/users/'+uid+'/profile').delete()}
     toast('You have left the study. Your posts and comments are deleted.');
   });
+  $('#u-other').addEventListener('click',function(){S.other=true;$('#join-form').reset();drawJoin();window.scrollTo(0,0)});
+  $('#j-other-cancel').addEventListener('click',function(){S.other=false;drawJoin()});
   function drawJoin(){
-    var me=myProfile();$('#join-form').hidden=!!me;$('#join-done').hidden=!me;$('#nav-join').textContent=me?me.username:'Join the study';
+    var me=myProfile();$('#join-form').hidden=!!me&&!S.other;$('#join-done').hidden=!me||!!S.other;$('#j-other-note').hidden=!S.other;$('#u-other-box').hidden=!(S.owner||S.mode==='local');$('#nav-join').textContent=me?me.username:'Join the study';
     if(me){$('#d-user').textContent=me.username;chips('#u-meds','umeds','checkbox',MEDS_ALL,me.meds);chips('#u-stage','ustage','radio',STAGES,[me.stage]);leaveArm=false;$('#u-leave').textContent='Leave the study'}
   }
   function renderAll(){rebuild();realCount();drawViz();drawPreg();var a=document.activeElement;if(!(a&&a.tagName==='INPUT'&&$('#posts').contains(a)))drawPosts();showPostForm();drawJoin()}
@@ -706,7 +727,7 @@ window.OUTLIER_DATA={"SOURCES":{"awaredx":{"short":"Chandak & Tatonetti, Pattern
       S.db=r[0];S.user=r[1];if(!S.db){S.uid='local';$('#sync').textContent='Offline copy: sign in on claude.ai for live reports.';renderAll();return}
       S.mode='live';
       return Promise.all([S.user?S.user.id():null,S.user?S.user.can('data.write'):null]).then(function(x){
-        S.uid=x[0];S.write=x[1];
+        S.uid=x[0];S.write=x[1];S.user&&S.user.isOwner().then(function(o){S.owner=o;drawJoin()});
         var timer=setTimeout(function(){$('#sync').textContent='Can’t reach the study data yet.'},10000);
         S.db.collection('members').onSnapshot(function(snap){
           var next={};snap.docs.forEach(function(d){next[d.id]=d.data()});
