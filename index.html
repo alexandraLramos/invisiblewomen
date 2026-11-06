@@ -547,7 +547,7 @@ window.OUTLIER_DATA={"SOURCES":{"awaredx":{"short":"Chandak & Tatonetti, Pattern
   var OTHER_MEDS=SHORT.concat(EXTRA,PREG_MEDS,['Prenatal vitamins','Other']);
   var MEDS_ALL=OTHER_MEDS.concat(BC.filter(function(b){return b!=='None'&&b!=='Condoms'}));
   var STAGES=['Not pregnant','Pregnant, 1st trimester','Pregnant, 2nd trimester','Pregnant, 3rd trimester','Breastfeeding','Trying to conceive'];
-  var EFFECTS=['Nausea','Dizziness','Sleepiness','Headache','Constipation','Heartburn','Anxiety','Low mood','Appetite change','Weight change','Acne','Spotting','Cycle change','Low libido','Hair changes','Rash or hives','None'];
+  var EFFECTS=['Nausea','Dizziness','Sleepiness','Headache','Constipation','Heartburn','Anxiety','Low mood','Appetite change','Weight change','Acne','Spotting','Cycle change','Low libido','Hair changes','Palpitations','Rash or hives','None'];
   var isPreg=function(s){return (s||'').indexOf('Pregnant')===0};
   var clone=function(o){return JSON.parse(JSON.stringify(o))};
 
@@ -568,7 +568,7 @@ window.OUTLIER_DATA={"SOURCES":{"awaredx":{"short":"Chandak & Tatonetti, Pattern
 
   /* community chart */
   var vizMed='Zoloft';
-  chips('#viz-meds','vizmed','radio',SHORT.concat(EXTRA,['Nexplanon','Kyleena IUD'],PREG_MEDS),[vizMed],function(){vizMed=vals('#viz-meds')[0];drawViz()});
+  chips('#viz-meds','vizmed','radio',SHORT.concat(EXTRA,['Nexplanon','Kyleena IUD','Mirena IUD'],PREG_MEDS),[vizMed],function(){vizMed=vals('#viz-meds')[0];drawViz()});
   $('#viz-only').addEventListener('change',function(){onlyReal.viz=this.checked;drawViz()});
   function effCounts(R){var all={};R.forEach(function(r){r.eff.forEach(function(e){if(e!=='None')all[e]=(all[e]||0)+1})});return all}
   function drawViz(){
@@ -617,6 +617,16 @@ window.OUTLIER_DATA={"SOURCES":{"awaredx":{"short":"Chandak & Tatonetti, Pattern
       {who:'fern_and_tea',text:'Panic the day after each shot for me, worse on Mounjaro than on Ozempic. I stayed on it because the benefits were worth it, but I plan for that second day now.',meds:['Tirzepatide','Zoloft'],stage:'Not pregnant',eff:['Anxiety']},
       {who:'saltwater_june',text:'My mood dips line up with my cycle. My prescriber kept me on Zoloft for that, and the GLP-1 has not changed it.',meds:['Zoloft','GLP-1s','Kyleena IUD'],stage:'Not pregnant',eff:['Low mood','Cycle change']},
       {who:'moderator',text:'Thank you all for sharing. If a medicine is making your anxiety or mood much worse, talk to your prescriber soon. If you are in crisis in the US, call or text 988.',mod:true}
+    ]},
+    {id:'ex7',t:'Anxiety or depression and a hormonal IUD: did it make things worse?',b:'I have anxiety and my doctor suggested Mirena for endometriosis. Did a hormonal IUD change your anxiety or mood?',a:'violet_hours',meds:['Mirena IUD'],stage:'Not pregnant',eff:['Anxiety'],v:58,age:'Example',c:[
+      {who:'cedar_bloom',text:'Both Mirena and Kyleena made my anxiety and depression much worse for me. It felt like the whole time I had them.',meds:['Mirena IUD','Kyleena IUD'],stage:'Not pregnant',eff:['Anxiety','Low mood']},
+      {who:'still_waters',text:'Some anxiety, not clinical. Mirena has not made it worse, and I have used one for over a decade.',meds:['Mirena IUD'],stage:'Not pregnant',eff:['None']},
+      {who:'tulip_field',text:'Mirena for about 10 months plus the pill. I have anxiety and a history of depression, and neither got worse. Happy with it for my symptoms.',meds:['Mirena IUD','Combined pill'],stage:'Not pregnant',eff:['None']},
+      {who:'grey_finch',text:'Mirena gave me constant anxiety and I could not take a deep breath. I also spotted and had pain the whole 10 months, so I had it removed.',meds:['Mirena IUD'],stage:'Not pregnant',eff:['Anxiety','Spotting','Cycle change']},
+      {who:'harbor_lights',text:'Fine for six weeks, then anxiety and heart palpitations that kept getting worse. I was told the IUD could not cause it. About three weeks after removal, both stopped.',meds:['Mirena IUD'],stage:'Not pregnant',eff:['Anxiety','Palpitations']},
+      {who:'paper_moons',text:'A progestin-only pill made me very low as a teen. With the coil I was tearful for about three months, then it settled and my periods mostly stopped. A friend with anxiety had no mood change at all.',meds:['Mirena IUD'],stage:'Not pregnant',eff:['Low mood','Cycle change']},
+      {who:'sage_and_salt',text:'I need an IUD for severe endometriosis. Kyleena took me three to six months to feel like myself. Mirena feels stronger: my anxiety went from about a 5 out of 10 to an 8, and my doctor is tracking it.',meds:['Mirena IUD','Kyleena IUD'],stage:'Not pregnant',eff:['Anxiety','Low mood']},
+      {who:'moderator',text:'Thanks for sharing. Reactions to hormonal IUDs vary a lot. If your mood or anxiety changes after a new birth control, tell your prescriber, and ask how removal works before insertion.',mod:true}
     ]},
     {id:'ex6',t:'Nausea on a GLP-1 that never really settled',a:'ofelia_r',meds:['GLP-1s','Synthroid'],stage:'Not pregnant',eff:['Nausea','Appetite change'],v:31,age:'Example',c:[]}
   ];
