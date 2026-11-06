@@ -237,6 +237,10 @@ details.more[open]>summary::before{content:"– "}
 .consent{background:var(--card);border:1.5px solid var(--edge);border-radius:12px;padding:14px 16px;margin:6px 0 18px}
 .consent ul{margin:8px 0 10px;padding-left:20px;font-size:.95rem}
 footer a{color:var(--muted)}
+.eyebrow{text-transform:uppercase;letter-spacing:.14em;font-size:.78rem;font-weight:700;color:var(--berry-text);margin:0 0 12px}
+.protocol{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px 22px;margin:18px 0 0;padding:16px 18px;border:1px solid var(--line);border-radius:14px;background:var(--card)}
+.protocol dt{font-size:.75rem;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);font-weight:700}
+.protocol dd{margin:2px 0 0;font-size:.95rem}
 .live{font-weight:700;color:var(--green-ink)}
 .tri{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
 .tcol h3{font-size:1rem}
@@ -271,6 +275,7 @@ footer a{color:var(--muted)}
 <section class="view" id="v-home">
   <div class="hero">
     <div>
+      <p class="eyebrow">Community observational trials, run by PhD scientists</p>
       <h1>Your medicine was tested.<br><span class="u">Were you?</span></h1>
       <p class="lead">Most medicines were studied mostly on men. See what is known for women, and pregnant women, and add what you notice.</p>
       <div class="row">
@@ -394,7 +399,15 @@ footer a{color:var(--muted)}
 
 <!-- JOIN -->
 <section class="view" id="v-join" hidden>
+  <p class="eyebrow">Community observational trial · Recruiting</p>
   <h1 style="font-size:clamp(2rem,4.6vw,3rem)">Join the study</h1>
+  <dl class="protocol">
+    <div><dt>Study</dt><dd>invisiblewomen Community Medication Experience Study</dd></div>
+    <div><dt>Design</dt><dd>Observational. We never ask you to start, stop or change a medicine.</dd></div>
+    <div><dt>Who can join</dt><dd>Adults 18+, pregnant or not</dd></div>
+    <div><dt>Run by</dt><dd>PhD scientists on the invisiblewomen team</dd></div>
+    <div><dt>What we collect</dt><dd>Medicines, birth control, pregnancy status, side effects, your experience</dd></div>
+  </dl>
   <p class="lead">One page, about two minutes. Your answers enroll you in the invisiblewomen community study and become your first report.</p>
 
   <form id="join-form" class="card" novalidate onsubmit="return false" style="margin-top:22px">
@@ -596,13 +609,22 @@ window.OUTLIER_DATA={"SOURCES":{"awaredx":{"short":"Chandak & Tatonetti, Pattern
     {id:'ex2',t:'Zofran stopped the vomiting but the constipation is rough',a:'maple_and_rain',meds:['Zofran','Prenatal vitamins'],stage:'Pregnant, 1st trimester',eff:['Constipation','Headache'],v:52,age:'Example',c:[{who:'sunroom22',text:'Same at 9 weeks. My midwife suggested asking about a stool softener.',meds:['Zofran','Prenatal vitamins'],stage:'Pregnant, 1st trimester',eff:['Constipation']}]},
     {id:'ex3',t:'Rheumatoid arthritis flare at 20 weeks. Who stayed on Plaquenil?',a:'amara_t',meds:['Plaquenil','Prenatal vitamins'],stage:'Pregnant, 2nd trimester',eff:['None'],v:41,age:'Example',c:[{who:'pinecone',text:'My rheumatologist kept me on it the whole pregnancy. No side effects I noticed.',meds:['Plaquenil'],stage:'Pregnant, 3rd trimester',eff:['None']}]},
     {id:'ex4',t:'Diclegis makes me so sleepy I can barely work',a:'north_fork',meds:['Diclegis'],stage:'Pregnant, 1st trimester',eff:['Sleepiness','Dizziness'],v:29,age:'Example',c:[]},
-    {id:'ex5',t:'Zoloft and dizziness after the dose went up',a:'delphine_k',meds:['Zoloft'],stage:'Not pregnant',eff:['Dizziness','Nausea'],v:24,age:'Example',c:[]},
+    {id:'ex5',t:'Anyone on a GLP-1 and Zoloft at the same time?',b:'Zoloft made it hard for me to feel full and I gained weight. Did the GLP-1 cancel that out for you, or change how the Zoloft works?',a:'river_and_sage',meds:['Zoloft','GLP-1s'],stage:'Not pregnant',eff:['Appetite change'],v:63,age:'Example',c:[
+      {who:'quiet_harbor',text:'Same story here. Zoloft took away my sense of fullness. A low-dose GLP-1 fixed the constant food noise and I finally lose weight eating the same amount.',meds:['Zoloft','GLP-1s'],stage:'Not pregnant',eff:['Appetite change','Weight change']},
+      {who:'mossy_steps',text:'On both, plus Wellbutrin. Weight keeps going down and the food noise is gone. The nausea was rough at first.',meds:['Zoloft','GLP-1s','Other'],stage:'Not pregnant',eff:['Nausea','Weight change']},
+      {who:'linen_days',text:'Nausea was bad for me too, but it stopped after about two weeks.',meds:['Zoloft','GLP-1s'],stage:'Not pregnant',eff:['Nausea']},
+      {who:'north_meadow',text:'Lost a lot of weight on both, but after a dose increase the GLP-1 gave me strong anxiety and panic attacks. They went away after I stopped it with my doctor. Doctors kept telling me it could not be the shot.',meds:['Zoloft','Tirzepatide'],stage:'Not pregnant',eff:['Anxiety','Weight change']},
+      {who:'fern_and_tea',text:'Panic the day after each shot for me, worse on Mounjaro than on Ozempic. I stayed on it because the benefits were worth it, but I plan for that second day now.',meds:['Tirzepatide','Zoloft'],stage:'Not pregnant',eff:['Anxiety']},
+      {who:'saltwater_june',text:'My mood dips line up with my cycle. My prescriber kept me on Zoloft for that, and the GLP-1 has not changed it.',meds:['Zoloft','GLP-1s','Kyleena IUD'],stage:'Not pregnant',eff:['Low mood','Cycle change']},
+      {who:'moderator',text:'Thank you all for sharing. If a medicine is making your anxiety or mood much worse, talk to your prescriber soon. If you are in crisis in the US, call or text 988.',mod:true}
+    ]},
     {id:'ex6',t:'Nausea on a GLP-1 that never really settled',a:'ofelia_r',meds:['GLP-1s','Synthroid'],stage:'Not pregnant',eff:['Nausea','Appetite change'],v:31,age:'Example',c:[]}
   ];
+  EXPOSTS.forEach(function(p){examples.push({meds:p.meds,stage:p.stage,eff:p.eff});p.c.forEach(function(c){if(c.meds)examples.push({meds:c.meds,stage:c.stage,eff:c.eff})})});
   var posts=[],openId=null;
   function ago(t){if(!t)return '';var m=Math.round((Date.now()-t)/60000);return m<1?'just now':m<60?m+' min ago':m<1440?Math.round(m/60)+' h ago':Math.round(m/1440)+' days ago'}
   function rebuild(){
-    var byId={};posts=EXPOSTS.map(function(p){var q=clone(p);q.ex=true;byId[q.id]=q;return q});real=[];
+    var byId={};posts=EXPOSTS.map(function(p){var q=clone(p);q.ex=true;q.b=q.b||'';byId[q.id]=q;return q});real=[];
     Object.keys(members).forEach(function(uid){var m=members[uid]||{};(m.posts||[]).forEach(function(p){var q={id:uid+'~'+p.id,t:p.t,b:p.b||'',a:m.username||'member',meds:p.meds||[],stage:p.stage,eff:p.eff||[],v:0,at:p.at||0,c:[]};posts.push(q);byId[q.id]=q;real.push({meds:q.meds,stage:q.stage,eff:q.eff})})});
     Object.keys(members).forEach(function(uid){var m=members[uid]||{};
       (m.comments||[]).forEach(function(c){var p=byId[c.post];if(p)p.c.push({who:m.username||'member',text:c.text,meds:c.meds,stage:c.stage,eff:c.eff,at:c.at});real.push({meds:c.meds||[],stage:c.stage,eff:c.eff||[]})});
