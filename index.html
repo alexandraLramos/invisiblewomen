@@ -237,6 +237,17 @@ details.more[open]>summary::before{content:"– "}
 .consent{background:var(--card);border:1.5px solid var(--edge);border-radius:12px;padding:14px 16px;margin:6px 0 18px}
 .consent ul{margin:8px 0 10px;padding-left:20px;font-size:.95rem}
 footer a{color:var(--muted)}
+.chat{display:flex;flex-direction:column;padding:16px 18px}
+.chat-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+.chat-log{display:flex;flex-direction:column;gap:10px;max-height:56vh;min-height:220px;overflow-y:auto;padding:4px 2px}
+.bubble{max-width:82%;padding:12px 16px;border-radius:18px;line-height:1.55;font-size:.98rem}
+.bubble.bot{align-self:flex-start;background:var(--paper);border:1px solid var(--line);border-bottom-left-radius:6px}
+.bubble.me{align-self:flex-end;background:var(--ink);color:var(--paper);border-bottom-right-radius:6px}
+.chat-input{display:flex;gap:10px;align-items:flex-end;border:1.5px solid var(--edge);border-radius:16px;padding:8px 8px 8px 14px;background:var(--card)}
+.chat-input textarea{border:0;max-width:none;min-height:40px;padding:8px 0;resize:none;background:transparent;box-shadow:none}
+.chat-input textarea:focus-visible{outline:none}
+.chat-input:focus-within{outline:3px solid var(--focus);outline-offset:2px}
+
 .how{display:grid;grid-template-columns:1fr 1.1fr;gap:48px;align-items:center;padding:20px 0 40px}
 .how-art{background:var(--teal-soft);border-radius:20px;padding:28px}
 .how-art svg{width:100%;height:auto;display:block}
@@ -343,7 +354,7 @@ footer a{color:var(--muted)}
         <li><span class="num">1</span><div><h3>Make it about you</h3><p>Join the study with a one-page survey about your body, your birth control, your medicines and your stage of life.</p></div></li>
         <li><span class="num">2</span><div><h3>Pick your medicine</h3><p>Look up a common medicine and see who it was studied on, who was left out, and which side effects women report more.</p></div></li>
         <li><span class="num">3</span><div><h3>See the stats</h3><p>Every report is counted, so you can see how common a side effect really is for women on your mix, by trimester if you're pregnant.</p></div></li>
-        <li><span class="num">4</span><div><h3><a href="#ai">Health Advisor AI</a></h3><p>Ask a question in plain words. It summarizes what the research and members say, and points you to the forum threads where your mix is being discussed.</p></div></li>
+        <li><span class="num">4</span><div><h3><a href="#ai">Research Assistant</a></h3><p>Ask a question in plain words. It summarizes what the research and members say, and points you to the forum threads where your mix is being discussed.</p></div></li>
       </ol>
       <div class="how-cta">
         <a class="btn berry big" href="#join">Join the study</a>
@@ -443,16 +454,20 @@ footer a{color:var(--muted)}
 <!-- ASK AI -->
 <section class="view" id="v-ai" hidden>
   <p class="eyebrow">Powered by Claude</p>
-  <h1 style="font-size:clamp(2rem,4.6vw,3rem)">Health Advisor AI</h1>
+  <h1 style="font-size:clamp(2rem,4.6vw,3rem)">Research Assistant</h1>
   <p class="lead">Ask about a medicine, a mix or a pregnancy question. It searches FDA drug labels, the FDA pregnancy registry list, the Columbia University machine-learning study and our members' reports, then points you to forum threads where it's being discussed.</p>
-  <div class="card guide" id="guide" style="margin-top:22px">
-    <div class="cmt-form" style="margin-top:0">
-      <label class="sr" for="g-q">Your question</label>
-      <input type="text" id="g-q" maxlength="300" placeholder="For example: Has anyone had anxiety on Mirena while taking Zoloft?">
-      <button class="btn berry" id="g-ask" type="button">Ask</button>
+  <div class="card guide chat" id="guide" style="margin-top:22px">
+    <div class="chat-top"><span class="small muted">Research Assistant · Powered by Claude</span><button type="button" class="linkbtn small" id="g-new">New chat</button></div>
+    <div id="g-log" class="chat-log" aria-live="polite">
+      <div class="bubble bot">Hi, I'm the invisiblewomen Research Assistant. Ask me about a medicine, your mix or a pregnancy question, and I'll tell you what the research and our members say, with links to the conversations.</div>
     </div>
-    <div class="chips" id="g-try" style="margin-top:12px"></div>
-    <div id="g-out" class="g-out" aria-live="polite"></div>
+    <div class="chips" id="g-try" style="margin:12px 0"></div>
+    <div id="g-out" class="g-out" hidden></div>
+    <div class="chat-input">
+      <label class="sr" for="g-q">Message the Research Assistant</label>
+      <textarea id="g-q" rows="1" maxlength="600" placeholder="Ask a question…"></textarea>
+      <button class="btn berry" id="g-ask" type="button" aria-label="Send">Send</button>
+    </div>
   </div>
   <p class="small muted" style="margin-top:14px">Answers are AI-generated summaries of the sources above. They are not medical advice. Talk with your prescriber before changing anything.</p>
 </section>
@@ -815,7 +830,7 @@ window.OUTLIER_DATA={"SOURCES":{"awaredx":{"short":"Chandak & Tatonetti, Pattern
 
   /* Ask the guide: Claude answers from the page's own research, reports and threads */
   var sampleP=(window.claude&&window.claude.use)?claude.use('sample'):Promise.resolve(null),gBusy=false,gAbort=null;
-  sampleP.then(function(s){if(!s){$('#g-ask').disabled=true;$('#g-out').innerHTML='<p class="small muted">The guide works on the live study page.</p>'}});
+  sampleP.then(function(s){if(!s){$('#g-ask').disabled=true;$('#g-log').insertAdjacentHTML('beforeend','<div class="bubble bot muted">The Research Assistant works on the live study page on claude.ai.</div>')}});
   function guideContext(){
     var research=D.MEDS.map(function(m){var regs=(m.reg||[]).map(function(k){var r=D.REGISTRIES.filter(function(x){return x[0].toLowerCase().indexOf(k)>-1})[0];return r?r[2]:''}).filter(Boolean);return '- '+m.name+' ('+m.brand+'): '+m.women.text+(m.preg?' FDA label on pregnancy: '+m.preg.text:'')+' Columbia ML study (AwareDX, FDA adverse-event reports): '+m.aw.f+' side effects reported more by women, '+m.aw.m+' more by men; top for women: '+m.aw.top.map(function(x){return x[0]}).join(', ')+'.'+(m.more?' '+m.more.text:'')+(regs.length?' FDA-listed pregnancy registry: '+regs.join('; ')+'.':'')}).join('\n');
     var counts={};pool('viz').forEach(function(r){r.meds.forEach(function(m){var c=counts[m]=counts[m]||{n:0,e:{}};c.n++;r.eff.forEach(function(e){if(e!=='None')c.e[e]=(c.e[e]||0)+1})})});
@@ -828,22 +843,36 @@ window.OUTLIER_DATA={"SOURCES":{"awaredx":{"short":"Chandak & Tatonetti, Pattern
   function linkify(txt){
     return esc(txt).replace(/\[\[([A-Za-z0-9_~.\-]+)\]\]/g,function(m,id){var p=posts.filter(function(x){return x.id===id})[0];return p?'<button type="button" class="linkbtn" data-goto="'+esc(id)+'">'+esc(p.t)+'</button>':''}).replace(/\n/g,'<br>');
   }
-  $('#g-out').addEventListener('click',function(e){var b=e.target.closest('[data-goto]');if(!b)return;openId=b.dataset.goto;location.hash='#community';drawPosts();setTimeout(function(){var el=document.querySelector('[data-open="'+openId+'"]');if(el)el.scrollIntoView({block:'center'})},80)});
+  $('#g-log').addEventListener('click',function(e){var b=e.target.closest('[data-goto]');if(!b)return;openId=b.dataset.goto;location.hash='#community';drawPosts();setTimeout(function(){var el=document.querySelector('[data-open="'+openId+'"]');if(el)el.scrollIntoView({block:'center'})},80)});
+  var chat=[];
+  var RULES='You are the invisiblewomen Research Assistant on a women\'s medicine research site run as a community-based observational study. Answer using ONLY the context below. Be plain, warm and short (under 150 words per answer). Say what the published research shows (name the source: FDA label, Columbia machine-learning study, Zucker and Prendergast 2020, or the FDA registry list) and what community members report, and keep the two clearly separate; member reports are self-reported, not proof. Point to the most relevant forum threads by writing their id in double brackets, like [[ex7]], one to three threads. Never diagnose and never tell anyone to start, stop or change a medicine; suggest talking with their prescriber. If someone mentions thoughts of self-harm, tell them to call or text 988 in the US. If the context has nothing relevant, say so and suggest posting the question in the forum.';
+  function drawChat(live){
+    var h='<div class="bubble bot">Hi, I’m the invisiblewomen Research Assistant. Ask me about a medicine, your mix or a pregnancy question, and I’ll tell you what the research and our members say, with links to the conversations.</div>';
+    chat.forEach(function(m){h+='<div class="bubble '+(m.role==='user'?'me':'bot')+'">'+(m.role==='user'?esc(m.content).replace(/\n/g,'<br>'):linkify(m.content))+'</div>'});
+    if(live!=null)h+='<div class="bubble bot">'+(live?linkify(live):'<span class="muted">Searching the research and conversations…</span>')+'</div>';
+    var log=$('#g-log');log.innerHTML=h;log.scrollTop=log.scrollHeight;
+  }
   function askGuide(){
     var q=$('#g-q').value.trim();if(!q||gBusy)return;
     sampleP.then(function(sample){
-      if(!sample)return;gBusy=true;$('#g-ask').disabled=true;$('#g-out').innerHTML='<p class="small muted">Looking through the research and conversations…</p>';
+      if(!sample)return;gBusy=true;$('#g-ask').disabled=true;$('#g-q').value='';
+      chat.push({role:'user',content:q});drawChat('');
       if(gAbort)gAbort.abort();gAbort=new AbortController();
-      var prompt='You are the invisiblewomen study guide on a women\'s medicine research site. Answer the member\'s question using ONLY the context below. Rules: plain, warm, short (under 150 words). Say what the published research shows (name the source: FDA label, Columbia machine-learning study, or FDA registry list) and what community members report, and keep the two clearly separate; community reports are self-reported, not proof. Point to the most relevant forum threads by writing their id in double brackets, like [[ex7]], one to three threads. Never diagnose, never tell anyone to start, stop or change a medicine; suggest talking with their prescriber. If someone mentions thoughts of self-harm, tell them to call or text 988 in the US. If the context has nothing relevant, say so and suggest posting the question.\n\n'+guideContext()+'\n\nMEMBER QUESTION: '+q;
-      sample(prompt,{signal:gAbort.signal,modelTier:'quick',onText:function(u){$('#g-out').innerHTML=linkify(u.text)}}).then(function(r){$('#g-out').innerHTML=linkify(r.text)+'<p class="small muted" style="margin-top:10px">AI-generated from this site’s research and member reports. Not medical advice.</p>'},function(err){
-        $('#g-out').innerHTML='<p class="small muted">'+(err&&err.code==='rate_limited'?'The guide is busy. Try again in a minute.':err&&err.code==='not_granted'?'The guide needs your permission to use Claude on this page.':'The guide could not answer right now.')+'</p>';
-      }).then(function(){gBusy=false;$('#g-ask').disabled=false});
+      $('#g-q').value=q;var ctx=guideContext();$('#g-q').value='';
+      var msgs=chat.map(function(m,i){return i===0?{role:'user',content:RULES+'\n\n'+ctx+'\n\nMEMBER QUESTION: '+m.content}:m});
+      if(chat.length>1)msgs[msgs.length-1]={role:'user',content:'(Context reminder: use only the context from the first message.)\n'+q};
+      sample(msgs,{signal:gAbort.signal,modelTier:'quick',cache:false,onText:function(u){drawChat(u.text)}}).then(function(r){chat.push({role:'assistant',content:r.text});drawChat()},function(err){
+        chat.pop();drawChat();$('#g-q').value=q;
+        var note=err&&err.code==='rate_limited'?'The assistant is busy. Try again in a minute.':err&&err.code==='not_granted'?'The assistant needs your permission to use Claude on this page.':'The assistant could not answer right now.';
+        $('#g-log').insertAdjacentHTML('beforeend','<div class="bubble bot muted">'+note+'</div>');
+      }).then(function(){gBusy=false;$('#g-ask').disabled=false;$('#g-q').focus()});
     });
   }
+  $('#g-new').addEventListener('click',function(){if(gAbort)gAbort.abort();chat=[];gBusy=false;$('#g-ask').disabled=false;drawChat()});
   $('#g-try').innerHTML=['Anxiety on Mirena with Zoloft?','GLP-1 and Zoloft together?','Zofran in the first trimester?','Is there a pregnancy registry for Ambien?'].map(function(s){return '<button type="button" class="tag" style="cursor:pointer;padding:6px 12px" data-q="'+esc(s)+'">'+esc(s)+'</button>'}).join('');
   $('#g-try').addEventListener('click',function(e){var b=e.target.closest('[data-q]');if(b){$('#g-q').value=b.dataset.q;askGuide()}});
   $('#g-ask').addEventListener('click',askGuide);
-  $('#g-q').addEventListener('keydown',function(e){if(e.key==='Enter')askGuide()});
+  $('#g-q').addEventListener('keydown',function(e){if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();askGuide()}});
 
   /* connect to the shared study store when the page runs on claude.ai; otherwise stay local */
   renderAll();route();
